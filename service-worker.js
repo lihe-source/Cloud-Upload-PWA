@@ -1,123 +1,119 @@
-const CACHE_NAME = 'cloud-uploader-v1';
-const urlsToCache = [
-  '/',
-  '/index.html',
-  '/styles.css',
-  '/app.js',
-  '/manifest.json',
-  '/icon-192.png',
-  '/icon-512.png'
+// 雲端檔案傳輸系統 v2.0 - Service Worker
+// 更新此版本號可強制讓所有使用者重新快取資源
+const CACHE_VERSION = 'v2.1';
+const CACHE_NAME    = `cloud-uploader-${CACHE_VERSION}`;
+
+const STATIC_ASSETS = [
+    './',
+    './index.html',
+    './styles.css',
+    './app.js',
+    './manifest.json',
+    './icon-192.png',
+    './icon-512.png'
 ];
 
-// 安裝 Service Worker
+// ─── 安裝：預快取靜態資源 ─────────────────────────────────────────────────────
 self.addEventListener('install', (event) => {
-  event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then((cache) => {
-        console.log('Opened cache');
-        return cache.addAll(urlsToCache);
-      })
-      .catch((error) => {
-        console.log('Cache addAll failed:', error);
-      })
-  );
+    event.waitUntil(
+        caches.open(CACHE_NAME)
+            .then(cache => cache.addAll(STATIC_ASSETS))
+            .then(() => self.skipWaiting()) // 立即接管，不等待舊 SW 失效
+    );
 });
 
-// 啟用 Service Worker
+// ─── 啟用：清除舊快取 ─────────────────────────────────────────────────────────
 self.addEventListener('activate', (event) => {
-  event.waitUntil(
-    caches.keys().then((cacheNames) => {
-      return Promise.all(
-        cacheNames.map((cacheName) => {
-          if (cacheName !== CACHE_NAME) {
-            console.log('Deleting old cache:', cacheName);
-            return caches.delete(cacheName);
-          }
-        })
-      );
-    })
-  );
+    event.waitUntil(
+        caches.keys()
+            .then(keys => Promise.all(
+                keys
+                    .filter(key => key !== CACHE_NAME)
+                    .map(key => caches.delete(key))
+            ))
+            .then(() => self.clients.claim()) // 立即控制所有頁面
+    );
 });
 
-// 攔截請求
+// ─── 請求攔截（Cache First for assets，Network First for HTML）─────────────────
 self.addEventListener('fetch', (event) => {
-  // 跳過 Google API 請求
-  if (event.request.url.includes('googleapis.com') || 
-      event.request.url.includes('accounts.google.com') ||
-      event.request.url.includes('gstatic.com')) {
-    return;
-  }
+    const url = new URL(event.request.url);
 
-  event.respondWith(
-    caches.match(event.request)
-      .then((response) => {
-        // 快取命中，返回快取的資源
-        if (response) {
-          return response;
-        }
+    // 跳過非 GET 請求
+    if (event.request.method !== 'GET') return;
 
-        // 快取未命中，發起網路請求
-        return fetch(event.request).then(
-          (response) => {
-            // 檢查是否收到有效的回應
-            if (!response || response.status !== 200 || response.type !== 'basic') {
-              return response;
-            }
+    // 跳過外部 API（Firebase, Google Fonts, etc.）
+    const BYPASS_ORIGINS = [
+        'googleapis.com',
+        'accounts.google.com',
+        'gstatic.com',
+        'firebaseio.com',
+        'firebasestorage.googleapis.com',
+        'fonts.googleapis.com',
+        'fonts.gstatic.com',
+        'ui-avatars.com'
+    ];
+    if (BYPASS_ORIGINS.some(o => url.hostname.includes(o))) return;
 
-            // 克隆回應
-            const responseToCache = response.clone();
-
-            caches.open(CACHE_NAME)
-              .then((cache) => {
-                cache.put(event.request, responseToCache);
-              });
-
-            return response;
-          }
+    // HTML → Network First（確保總是最新版本）
+    if (event.request.headers.get('accept')?.includes('text/html')) {
+        event.respondWith(
+            fetch(event.request)
+                .then(response => {
+                    const clone = response.clone();
+                    caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone));
+                    return response;
+                })
+                .catch(() => caches.match(event.request))
         );
-      })
-      .catch(() => {
-        // 網路請求失敗，返回離線頁面
-        return caches.match('/index.html');
-      })
-  );
-});
-
-// 背景同步
-self.addEventListener('sync', (event) => {
-  if (event.tag === 'sync-files') {
-    event.waitUntil(syncFiles());
-  }
-});
-
-async function syncFiles() {
-  // 實作背景同步邏輯
-  console.log('Background sync triggered');
-}
-
-// 推送通知
-self.addEventListener('push', (event) => {
-  const options = {
-    body: event.data ? event.data.text() : '新通知',
-    icon: '/icon-192.png',
-    badge: '/icon-192.png',
-    vibrate: [200, 100, 200],
-    data: {
-      dateOfArrival: Date.now(),
-      primaryKey: 1
+        return;
     }
-  };
 
-  event.waitUntil(
-    self.registration.showNotification('雲端傳輸', options)
-  );
+    // 靜態資源 → Cache First
+    event.respondWith(
+        caches.match(event.request)
+            .then(cached => {
+                if (cached) return cached;
+                return fetch(event.request).then(response => {
+                    if (response.ok && response.type === 'basic') {
+                        caches.open(CACHE_NAME)
+                            .then(cache => cache.put(event.request, response.clone()));
+                    }
+                    return response;
+                });
+            })
+            .catch(() => caches.match('./index.html'))
+    );
 });
 
-// 通知點擊
+// ─── 背景同步（預留）─────────────────────────────────────────────────────────
+self.addEventListener('sync', (event) => {
+    if (event.tag === 'sync-files') {
+        event.waitUntil(Promise.resolve());
+    }
+});
+
+// ─── 推播通知 ─────────────────────────────────────────────────────────────────
+self.addEventListener('push', (event) => {
+    const data = event.data?.json() || {};
+    event.waitUntil(
+        self.registration.showNotification(data.title || '雲端傳輸', {
+            body:    data.body || '有新通知',
+            icon:    './icon-192.png',
+            badge:   './icon-192.png',
+            vibrate: [200, 100, 200],
+            data:    { url: data.url || './' }
+        })
+    );
+});
+
 self.addEventListener('notificationclick', (event) => {
-  event.notification.close();
-  
-  event.waitUntil(
-    clients.openWindow('/')
-  );
+    event.notification.close();
+    event.waitUntil(
+        clients.matchAll({ type: 'window' }).then(windowClients => {
+            const url = event.notification.data?.url || './';
+            const existing = windowClients.find(c => c.url === url && 'focus' in c);
+            return existing ? existing.focus() : clients.openWindow(url);
+        })
+    );
 });

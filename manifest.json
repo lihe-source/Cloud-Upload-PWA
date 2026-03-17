@@ -1,12 +1,14 @@
 {
   "name": "雲端檔案傳輸系統",
   "short_name": "雲端傳輸",
-  "description": "透過 Google Drive 進行檔案上傳、下載與管理的 PWA 應用",
-  "start_url": "/index.html",
+  "description": "透過 Firebase Storage 進行檔案上傳、下載與管理的 PWA 應用",
+  "start_url": "./index.html",
+  "scope": "./",
   "display": "standalone",
   "background_color": "#0f0f23",
   "theme_color": "#667eea",
   "orientation": "portrait-primary",
+  "lang": "zh-TW",
   "icons": [
     {
       "src": "icon-192.png",
@@ -22,6 +24,5 @@
     }
   ],
   "categories": ["productivity", "utilities"],
-  "screenshots": [],
   "prefer_related_applications": false
 }
