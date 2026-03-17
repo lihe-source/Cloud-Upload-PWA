@@ -1,0 +1,27 @@
+{
+  "name": "雲端檔案傳輸系統",
+  "short_name": "雲端傳輸",
+  "description": "透過 Google Drive 進行檔案上傳、下載與管理的 PWA 應用",
+  "start_url": "/index.html",
+  "display": "standalone",
+  "background_color": "#0f0f23",
+  "theme_color": "#667eea",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["productivity", "utilities"],
+  "screenshots": [],
+  "prefer_related_applications": false
+}
