@@ -1,7 +1,7 @@
 :root {
-    --primary: #FFA000;
-    --primary-dark: #F57C00;
-    --secondary: #FF6F00;
+    --primary: #10b981;
+    --primary-dark: #059669;
+    --secondary: #14b8a6;
     --success: #48bb78;
     --danger: #f56565;
     --warning: #ed8936;
@@ -985,4 +985,44 @@ body {
     .toast {
         min-width: auto;
     }
+}
+
+/* 步驟框樣式 */
+.step-box {
+    padding: 1rem;
+    background: #f8fafc;
+    border-left: 4px solid var(--primary);
+    border-radius: 8px;
+    margin-bottom: 1rem;
+}
+
+.step-box strong {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: var(--primary);
+}
+
+.step-box code {
+    background: #e2e8f0;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.9em;
+}
+
+.step-box a {
+    color: var(--primary);
+    text-decoration: none;
+}
+
+.step-box a:hover {
+    text-decoration: underline;
+}
+
+.step-box ul {
+    margin: 0.5rem 0 0 1.5rem;
+}
+
+.step-box li {
+    margin: 0.25rem 0;
 }

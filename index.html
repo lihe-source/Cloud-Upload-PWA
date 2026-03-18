@@ -3,13 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="theme-color" content="#667eea">
-    <meta name="description" content="透過 Firebase Storage 進行檔案上傳、下載與管理的 PWA 應用">
-    <title>雲端檔案傳輸系統 v2.0</title>
+    <meta name="theme-color" content="#10b981">
+    <title>雲端檔案傳輸系統 v3.2 - 完全免費版</title>
     <link rel="manifest" href="manifest.json">
     <link rel="stylesheet" href="styles.css">
-    <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
-    <link rel="apple-touch-icon" href="icon-192.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -22,12 +19,13 @@
     <div id="firebaseConfigModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h2>🔥 Firebase 專案設定</h2>
+                <h2>🔥 Firebase 專案設定 v3.2</h2>
                 <button class="modal-close" id="closeConfigModal">✕</button>
             </div>
             <div class="modal-body">
-                <div class="alert alert-info">
-                    <strong>🔐 安全提示：</strong>您的 Firebase 設定僅儲存在本機瀏覽器中，不會上傳到任何伺服器。
+                <div class="alert alert-success">
+                    <strong>✅ v3.2 完全免費版：</strong>使用 Realtime Database 儲存，無需 Storage！<br>
+                    免費額度：1 GB 儲存 + 10 GB/月 下載流量
                 </div>
                 
                 <div class="config-method">
@@ -42,14 +40,15 @@
                             placeholder='{
   "apiKey": "AIza...",
   "authDomain": "your-project.firebaseapp.com",
+  "databaseURL": "https://your-project.firebaseio.com",
   "projectId": "your-project",
   "storageBucket": "your-project.appspot.com",
   "messagingSenderId": "123456789",
   "appId": "1:123456789:web:abc123"
 }'
-                            rows="10"
+                            rows="12"
                         ></textarea>
-                        <small class="form-help">從 Firebase Console → 專案設定 → 您的應用程式 → SDK 設定和設定 → 複製 firebaseConfig</small>
+                        <small class="form-help">⚠️ 確保包含 <strong>databaseURL</strong>（Realtime Database 網址）</small>
                     </div>
                 </div>
 
@@ -68,12 +67,12 @@
                             <input type="text" id="authDomainInput" class="form-input" placeholder="your-project.firebaseapp.com">
                         </div>
                         <div class="form-group">
-                            <label>Project ID <span class="required">*</span></label>
-                            <input type="text" id="projectIdInput" class="form-input" placeholder="your-project">
+                            <label>Database URL <span class="required">*</span></label>
+                            <input type="text" id="databaseURLInput" class="form-input" placeholder="https://your-project.firebaseio.com">
                         </div>
                         <div class="form-group">
-                            <label>Storage Bucket <span class="required">*</span></label>
-                            <input type="text" id="storageBucketInput" class="form-input" placeholder="your-project.appspot.com">
+                            <label>Project ID <span class="required">*</span></label>
+                            <input type="text" id="projectIdInput" class="form-input" placeholder="your-project">
                         </div>
                         <div class="form-group">
                             <label>Messaging Sender ID <span class="required">*</span></label>
@@ -87,8 +86,11 @@
                 </div>
 
                 <div class="alert alert-warning">
-                    <strong>📚 如何取得 Firebase 設定？</strong><br>
-                    請參考專案 <strong>README.md</strong> 中的 Firebase 設定教學。
+                    <strong>📚 v3.2 設定步驟：</strong><br>
+                    1. 建立 Firebase 專案<br>
+                    2. 啟用 <strong>Authentication</strong>（Google 登入）<br>
+                    3. 啟用 <strong>Realtime Database</strong>（不需要 Storage！）<br>
+                    4. 複製設定並包含 <strong>databaseURL</strong>
                 </div>
 
                 <div class="modal-actions">
@@ -102,8 +104,8 @@
 
                 <div class="quick-links">
                     <p><strong>快速連結：</strong></p>
-                    <a href="https://console.firebase.google.com/" target="_blank" rel="noopener noreferrer">Firebase Console</a> |
-                    <a href="https://github.com/" target="_blank" rel="noopener noreferrer">GitHub</a>
+                    <a href="https://console.firebase.google.com/" target="_blank">Firebase Console</a> |
+                    <a href="V3_SETUP.md" target="_blank">v3.0 設定教學</a>
                 </div>
             </div>
         </div>
@@ -116,16 +118,17 @@
                     <rect width="40" height="40" rx="12" fill="url(#gradient1)"/>
                     <path d="M20 10L30 18L20 26L10 18L20 10Z" fill="white" opacity="0.9"/>
                     <path d="M20 26L30 34H10L20 26Z" fill="white" opacity="0.6"/>
+                    <circle cx="20" cy="20" r="3" fill="white"/>
                     <defs>
                         <linearGradient id="gradient1" x1="0" y1="0" x2="40" y2="40">
-                            <stop offset="0%" stop-color="#FFA000"/>
-                            <stop offset="100%" stop-color="#F57C00"/>
+                            <stop offset="0%" stop-color="#10b981"/>
+                            <stop offset="100%" stop-color="#059669"/>
                         </linearGradient>
                     </defs>
                 </svg>
                 <div>
-                    <h1>雲端傳輸 <span class="version">v2.0</span></h1>
-                    <small class="powered-by">Powered by Firebase</small>
+                    <h1>雲端傳輸 <span class="version">v3.2</span></h1>
+                    <small class="powered-by">Realtime Database - 完全免費</small>
                 </div>
             </div>
             <div class="header-actions">
@@ -147,8 +150,39 @@
         </header>
 
         <main class="main-content">
+            <!-- 用量顯示 -->
+            <section class="glass-card usage-section">
+                <div id="usageStats">
+                    <div class="usage-header">
+                        <h3>📊 儲存空間使用量</h3>
+                        <button class="btn-refresh" onclick="calculateUsage()" title="重新計算">🔄</button>
+                    </div>
+                    <div class="usage-bar">
+                        <div class="usage-fill" style="width: 0%">0%</div>
+                    </div>
+                    <div class="usage-details">
+                        <div class="usage-item">
+                            <span class="usage-label">已使用：</span>
+                            <span class="usage-value">0 MB</span>
+                        </div>
+                        <div class="usage-item">
+                            <span class="usage-label">免費額度：</span>
+                            <span class="usage-value">1 GB</span>
+                        </div>
+                        <div class="usage-item">
+                            <span class="usage-label">檔案數量：</span>
+                            <span class="usage-value">0 個</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
             <!-- 上傳區域 -->
             <section class="upload-section glass-card">
+                <div class="alert alert-info">
+                    <strong>💡 v3.0 建議：</strong>單檔不超過 <strong>20 MB</strong>（Realtime Database 優化）
+                </div>
+
                 <div class="upload-zone" id="uploadZone">
                     <svg class="upload-icon" width="80" height="80" viewBox="0 0 80 80" fill="none">
                         <circle cx="40" cy="40" r="35" stroke="url(#gradient2)" stroke-width="2" opacity="0.3"/>
@@ -156,13 +190,13 @@
                         <path d="M25 50H55" stroke="url(#gradient2)" stroke-width="3" stroke-linecap="round"/>
                         <defs>
                             <linearGradient id="gradient2" x1="0" y1="0" x2="80" y2="80">
-                                <stop offset="0%" stop-color="#FFA000"/>
-                                <stop offset="100%" stop-color="#F57C00"/>
+                                <stop offset="0%" stop-color="#10b981"/>
+                                <stop offset="100%" stop-color="#059669"/>
                             </linearGradient>
                         </defs>
                     </svg>
                     <h2>拖曳檔案至此處</h2>
-                    <p>或點擊選擇檔案</p>
+                    <p>建議單檔 < 20 MB</p>
                     <input type="file" id="fileInput" multiple style="display: none;">
                     <button class="select-button" id="selectButton">選擇檔案</button>
                 </div>
@@ -212,11 +246,10 @@
     <!-- Toast 通知 -->
     <div id="toastContainer" class="toast-container"></div>
 
-    <!-- Firebase SDKs -->
+    <!-- Firebase SDKs - Realtime Database -->
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
     <script src="app.js"></script>
 </body>
 </html>
