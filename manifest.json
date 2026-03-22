@@ -1,5 +1,5 @@
 {
-  "name": "雲端檔案傳輸系統 v3.2",
+  "name": "雲端檔案傳輸系統 v3.4",
   "short_name": "雲端傳輸 v3",
   "description": "使用 Firebase Realtime Database 的免費雲端檔案傳輸 PWA",
   "start_url": "./",

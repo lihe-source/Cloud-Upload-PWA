@@ -1,4 +1,4 @@
-// 雲端檔案傳輸系統 v3.2 - Realtime Database 完全免費版
+// 雲端檔案傳輸系統 v3.3 - Realtime Database 完全免費版
 'use strict';
 
 let firebaseApp = null;
@@ -770,3 +770,161 @@ function showToast(message, type = 'info') {
 
     setTimeout(() => toast.remove(), 5000);
 }
+
+// ═══════════════════════════════════════════════════════════════════════
+// 🆕 v3.4 - PWA 自動更新機制
+// ═══════════════════════════════════════════════════════════════════════
+
+let updateAvailable = false;
+let newWorker = null;
+
+// 檢查 Service Worker 更新
+if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+        console.log('[Update] Controller changed, reloading...');
+        if (updateAvailable) {
+            window.location.reload();
+        }
+    });
+
+    // 監聽 Service Worker 訊息
+    navigator.serviceWorker.addEventListener('message', (event) => {
+        if (event.data && event.data.type === 'SW_UPDATED') {
+            console.log('[Update] New version available:', event.data.version);
+            handleUpdateAvailable(event.data.version);
+        }
+    });
+}
+
+// 處理更新可用（根據設定決定行為）
+function handleUpdateAvailable(version) {
+    const strategy = getUpdateStrategy();
+    
+    console.log('[Update] Strategy:', strategy, 'Version:', version);
+    
+    switch (strategy) {
+        case UPDATE_STRATEGIES.AUTO:
+            // 自動更新：顯示倒數，10 秒後自動更新
+            showAutoUpdateCountdown(version);
+            break;
+        
+        case UPDATE_STRATEGIES.NOTIFY:
+            // 顯示通知：讓使用者決定
+            showUpdateNotification(version);
+            break;
+        
+        case UPDATE_STRATEGIES.MANUAL:
+            // 手動模式：只記錄，不顯示
+            console.log('[Update] Manual mode: Update available but not showing notification');
+            break;
+    }
+}
+
+// 顯示更新通知（v3.3 方式）
+function showUpdateNotification(version) {
+    const notification = document.createElement('div');
+    notification.id = 'updateNotification';
+    notification.className = 'update-notification';
+    notification.innerHTML = `
+        <div class="update-content">
+            <div class="update-icon">🎉</div>
+            <div class="update-message">
+                <strong>新版本可用！</strong>
+                <p>版本 ${version} 已準備就緒</p>
+            </div>
+            <button class="update-button" onclick="updateApp()">
+                立即更新
+            </button>
+            <button class="update-dismiss" onclick="dismissUpdate()">
+                稍後再說
+            </button>
+        </div>
+    `;
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        notification.classList.add('show');
+    }, 100);
+}
+
+// 更新應用程式（v3.3 方式）
+function updateApp() {
+    const notification = document.getElementById('updateNotification');
+    if (notification) {
+        notification.remove();
+    }
+    
+    if (newWorker) {
+        newWorker.postMessage({ type: 'SKIP_WAITING' });
+    }
+    
+    showToast('正在更新應用程式...', 'info');
+    
+    setTimeout(() => {
+        window.location.reload();
+    }, 1000);
+}
+
+// 關閉更新通知
+function dismissUpdate() {
+    const notification = document.getElementById('updateNotification');
+    if (notification) {
+        notification.classList.remove('show');
+        setTimeout(() => {
+            notification.remove();
+        }, 300);
+    }
+}
+
+// 手動檢查更新
+async function checkForUpdates() {
+    if (!('serviceWorker' in navigator)) {
+        showToast('瀏覽器不支援 Service Worker', 'warning');
+        return;
+    }
+
+    try {
+        const registration = await navigator.serviceWorker.getRegistration();
+        if (registration) {
+            await registration.update();
+            showToast('已檢查更新', 'info');
+        }
+    } catch (error) {
+        console.error('Update check failed:', error);
+        showToast('檢查更新失敗', 'error');
+    }
+}
+
+// 取得當前版本
+async function getCurrentVersion() {
+    if (!('serviceWorker' in navigator)) {
+        return 'unknown';
+    }
+
+    try {
+        const registration = await navigator.serviceWorker.getRegistration();
+        if (registration && registration.active) {
+            return new Promise((resolve) => {
+                const messageChannel = new MessageChannel();
+                messageChannel.port1.onmessage = (event) => {
+                    resolve(event.data.version || 'unknown');
+                };
+                registration.active.postMessage(
+                    { type: 'GET_VERSION' },
+                    [messageChannel.port2]
+                );
+            });
+        }
+    } catch (error) {
+        console.error('Get version failed:', error);
+    }
+    return 'unknown';
+}
+
+// 頁面載入時檢查版本
+window.addEventListener('load', async () => {
+    const version = await getCurrentVersion();
+    console.log('[App] Current version:', version);
+});
+
+console.log('[App] Update mechanism loaded');
